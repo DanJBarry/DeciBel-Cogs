@@ -29,7 +29,7 @@ class Braacket:
             soupObject = BeautifulSoup(await response.text(), 'html.parser')
         try:
             latest = soupObject.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
-            await self.bot.say('https://braacket.com/league/StevensMelee' + latest + '/bracket')
+            await self.bot.say('https://braacket.com' + latest + '/bracket')
         except:
             await self.bot.say('Couldn\'t find the latest bracket. Something broke.')
 
