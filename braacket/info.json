@@ -1,0 +1,10 @@
+{
+    "AUTHOR" : "DeciBel",
+    "INSTALL_MSG" : "",
+    "NAME" : "Braacket",
+    "SHORT" : "Interact with the Stevens Melee Braacket page",
+    "DESCRIPTION" : "Interact with the Stevens Melee Braacket page",
+    "TAGS" : ["gaming", "search", "utility"],
+    "REQUIREMENTS" : ["beautifulsoup4"],
+    "HIDDEN" : false
+}
