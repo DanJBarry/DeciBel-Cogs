@@ -57,7 +57,7 @@ class Braacket:
                 embed.set_author(name=name, url=player_url, icon_url=character_url)
                 await bot.say(embed=embed)'''
 
-            await self.bot.say('test')
+            await self.bot.say(table)
 
         except:
             await self.bot.say('Couldn\'t find the latest PR. Something broke.')
