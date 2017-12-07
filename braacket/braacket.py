@@ -57,7 +57,7 @@ class Braacket:
                 embed.set_author(name=name, url=player_url, icon_url=character_url)
                 await bot.say(embed=embed)'''
 
-            await bot.say(soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis')[0].get_text(strip='True'))
+            await bot.say('test')
 
         except:
             await self.bot.say('Couldn\'t find the latest PR. Something broke.')
