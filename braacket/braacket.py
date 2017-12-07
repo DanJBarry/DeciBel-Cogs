@@ -36,7 +36,7 @@ class Braacket:
     @commands.command()
     async def pr(self):
         '''Fetches the top 10 players on the current Power Ranking'''
-        '''url = 'https://braacket.com/league/StevensMelee/ranking'
+        url = 'https://braacket.com/league/StevensMelee/ranking'
         async with aiohttp.get(url) as response:
             soupObject = BeautifulSoup(await response.text(), 'html.parser')
         try:
@@ -53,20 +53,12 @@ class Braacket:
                 description += table[player].span.find_all('img')[-1].get('title')
                 description += ' || ' + points[player].get_text(strip='True')
 
-                embed = discord.Embed(description=description)
-                embed.set_author(name=name, url=player_url, icon_url=character_url)
-                await bot.say(embed=embed)
+                '''embed = discord.Embed(description=description)
+                embed.set_author(name=name, url=player_url, icon_url=character_url)'''
+                await bot.say(name + player_url + character_url + decription)
 
         except:
-            await self.bot.say('Couldn\'t find the latest PR. Something broke.')'''
-        url = 'https://braacket.com/league/StevensMelee/tournament' #build the web address
-        async with aiohttp.get(url) as response:
-            soupObject = BeautifulSoup(await response.text(), 'html.parser')
-        try:
-            latest = soupObject.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
-            await self.bot.say('https://braacket.com' + latest + '/bracket')
-        except:
-            await self.bot.say('Couldn\'t find the latest bracket. Something broke.')
+            await self.bot.say('Couldn\'t find the latest PR. Something broke.')
         
 
 def setup(bot):
