@@ -41,10 +41,10 @@ class Braacket:
             soupObject = BeautifulSoup(await response.text(), 'html.parser')
         try:
             table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis')
-            '''points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right')
+            points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right')
             for player in range(10):
                 name = table[player].get_text(strip='True')
-                player_url = 'https://www.braacket.com' + table[player].a.get('href')
+                '''player_url = 'https://www.braacket.com' + table[player].a.get('href')
                 character_url = 'https://www.braacket.com' + table[player].img.get('src')
                 description = ''
                 if len(table[player].span.find_all('img')) > 1:
@@ -54,10 +54,8 @@ class Braacket:
                 description += ' || ' + points[player].get_text(strip='True')
 
                 embed = discord.Embed(description=description)
-                embed.set_author(name=name, url=player_url, icon_url=character_url)
-                await bot.say(embed=embed)'''
-
-            await self.bot.say(table)
+                embed.set_author(name=name, url=player_url, icon_url=character_url)'''
+                await self.bot.say(name)
 
         except:
             await self.bot.say('Couldn\'t find the latest PR. Something broke.')
