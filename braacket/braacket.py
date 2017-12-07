@@ -33,6 +33,36 @@ class Braacket:
         except:
             await self.bot.say('Couldn\'t find the latest bracket. Something broke.')
 
+    @commands.command()
+    async def pr(self):
+        '''Fetches the top 10 players on the current Power Ranking'''
+        url = 'https://braacket.com/league/StevensMelee/ranking'
+        async with aiohttp.get(url) as response:
+            soupObject = BeautifulSoup(await response.text(), 'html.parser')
+        try:
+            table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis')
+            points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right')
+            for player in range(10):
+                name = table[player].get_text()
+                player_url = 'https://www.braacket.com' + table[player].a.get('href')
+                character_url = 'https://www.braacket.com' + table[player].img.get('src')
+                description = ''
+                if len(table[player].span.find_all('img')) > 1:
+                    for mains in range(len(table[player].span.find_all('img')) - 1):
+                        description += table[player].span.find_all('img')[mains].get('title') + ', '
+                    description += table[player].span.find_all('img')[mains].get('title')
+                else:
+                    decription = table[player].span.img.get('title')
+                description += ' || ' + points[player].get_text()
+
+                embed = discord.Embed(description=description)
+                embed.set_author(name=name, url=player_url, icon_url=character_url)
+                await bot.say(embed=embed)
+
+        except:
+            await self.bot.say('Couldn\'t find the latest PR. Something broke.')
+        
+
 def setup(bot):
     if soupAvailable:
         bot.add_cog(Braacket(bot))
