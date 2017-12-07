@@ -40,8 +40,8 @@ class Braacket:
         async with aiohttp.get(url) as response:
             soupObject = BeautifulSoup(await response.text(), 'html.parser')
         try:
-            '''table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis')
-            points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right')
+            table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis')
+            '''points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right')
             for player in range(10):
                 name = table[player].get_text(strip='True')
                 player_url = 'https://www.braacket.com' + table[player].a.get('href')
@@ -57,7 +57,7 @@ class Braacket:
                 embed.set_author(name=name, url=player_url, icon_url=character_url)
                 await bot.say(embed=embed)'''
 
-            await bot.say('test')
+            await self.bot.say('test')
 
         except:
             await self.bot.say('Couldn\'t find the latest PR. Something broke.')
