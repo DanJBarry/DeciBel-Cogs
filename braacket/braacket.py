@@ -45,7 +45,7 @@ class Braacket:
 		try:
 			table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis') #Gets the table of players
 			points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right') #Gets the table of points for each player
-			for player in range(10): #We're gonna do this for the top 10
+			for player in range(players): #We're gonna do this for the top 10
 				name = table[player].get_text(strip='True') #The names are the plaintext elements
 				player_url = 'https://www.braacket.com' + table[player].a.get('href') #Grabs the link of each player
 				character_url = 'https://www.braacket.com' + table[player].img.get('src') #Grabs the icon for the first character of each player
