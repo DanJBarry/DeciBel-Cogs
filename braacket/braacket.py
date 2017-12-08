@@ -72,7 +72,7 @@ class Braacket:
         		return await self.bot.say('Failed to set URL. Must be some form of https://braacket.com/league/[league name]/ranking')
         	if url[-1] == '/':
         		url = url[:-1]
-            self._pr_url = url
+        	self._pr_url = url
             await self.bot.say('Successfully set the URL to ' + url)
         except:
             await self.bot.say('Something broke :(')
