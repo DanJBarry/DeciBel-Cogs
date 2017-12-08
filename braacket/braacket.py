@@ -20,7 +20,6 @@ class Braacket:
 
     def __init__(self, bot):
         self.bot = bot
-        self._pr_url = None
 
     @commands.command()
     async def bracket(self):
@@ -37,11 +36,16 @@ class Braacket:
     @commands.command()
     async def pr(self, players):
         '''Fetches the top 10 players on the current Power Ranking'''
+<<<<<<< HEAD
         if self._pr_url is None:
             return await self.bot.say('No URL has been set. Use !setpr <url>')
         if not 0 < players <= 10:
             return await self.bot.say('Players must be > 0 and <= 10')
         async with aiohttp.get(self._pr_url) as response: #Look at the html of https://braacket.com/league/StevensMelee/ranking if you want to understand this code at all
+=======
+        url = 'https://braacket.com/league/StevensMelee/ranking' #Look at the html of this if you want to understand this code at all
+        async with aiohttp.get(url) as response:
+>>>>>>> parent of fe876a2... Add setpr command
             soupObject = BeautifulSoup(await response.text(), 'html.parser')
         try:
             table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis') #Gets the table of players
@@ -63,6 +67,7 @@ class Braacket:
 
         except:
             await self.bot.say('Couldn\'t find the latest PR. Something broke.')
+<<<<<<< HEAD
 
     @commands.command()
     async def setpr(self, url):
@@ -74,6 +79,8 @@ class Braacket:
             await self.bot.say('Successfully set the URL to ' + url)
         except:
             await self.bot.say('Something broke :(')
+=======
+>>>>>>> parent of fe876a2... Add setpr command
         
 
 def setup(bot):
