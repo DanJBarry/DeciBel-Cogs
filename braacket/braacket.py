@@ -70,7 +70,7 @@ class Braacket:
         	test_url = url.strip().split('/')
         	if not ((test_url[0] == 'https:' or test_url[0] == 'http:') and test_url[2] == 'braacket.com' and test_url[3] == 'league' and test_url[5] == 'ranking'):
         		return await self.bot.say('Failed to set URL. Must be some form of https://braacket.com/league/[league name]/ranking')
-        	if url[-1] = '/':
+        	if url[-1] == '/':
         		url = url[:-1]
             self._pr_url = url
             await self.bot.say('Successfully set the URL to ' + url)
