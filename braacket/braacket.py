@@ -63,19 +63,19 @@ class Braacket:
         except:
             await self.bot.say('Couldn\'t find the latest PR. Something broke.')
 
-    @commands.command()
-    async def setpr(self, url):
-        '''Set the URL to use for !pr'''
-        try:
-        	test_url = url.strip().split('/')
-        	if not ((test_url[0] == 'https:' or test_url[0] == 'http:') and test_url[2] == 'braacket.com' and test_url[3] == 'league' and test_url[5] == 'ranking'):
-        		return await self.bot.say('Failed to set URL. Must be some form of https://braacket.com/league/[league name]/ranking')
-        	if url[-1] == '/':
-        		url = url[:-1]
-        	self._pr_url = url
-            await self.bot.say('Successfully set the URL to ' + url)
-        except:
-            await self.bot.say('Something broke :(')
+	@commands.command()
+	async def setpr(self, url):
+		'''Set the URL to use for !pr'''
+		try:
+			test_url = url.strip().split('/')
+			if not ((test_url[0] == 'https:' or test_url[0] == 'http:') and test_url[2] == 'braacket.com' and test_url[3] == 'league' and test_url[5] == 'ranking'):
+				return await self.bot.say('Failed to set URL. Must be some form of https://braacket.com/league/[league name]/ranking')
+			if url[-1] == '/':
+				url = url[:-1]
+			self._pr_url = url
+			await self.bot.say('Successfully set the URL to ' + url)
+		except:
+			await self.bot.say('Something broke :(')
         
 
 def setup(bot):
