@@ -36,25 +36,25 @@ class Braacket:
     @commands.command()
     async def pr(self):
         '''Fetches the top 10 players on the current Power Ranking'''
-        url = 'https://braacket.com/league/StevensMelee/ranking'
+        url = 'https://braacket.com/league/StevensMelee/ranking' #Look at the html of this if you want to understand this code at all
         async with aiohttp.get(url) as response:
             soupObject = BeautifulSoup(await response.text(), 'html.parser')
         try:
-            table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis')
-            points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right')
-            for player in range(10):
-                name = table[player].get_text(strip='True')
-                player_url = 'https://www.braacket.com' + table[player].a.get('href')
-                character_url = 'https://www.braacket.com' + table[player].img.get('src')
+            table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis') #Gets the table of players
+            points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right') #Gets the table of points for each player
+            for player in range(10): #We're gonna do this for the top 10
+                name = table[player].get_text(strip='True') #The names are the plaintext elements
+                player_url = 'https://www.braacket.com' + table[player].a.get('href') #Grabs the link of each player
+                character_url = 'https://www.braacket.com' + table[player].img.get('src') #Grabs the icon for the first character of each player
                 description = ''
-                if len(table[player].span.find_all('img')) > 1:
-                    for mains in range(len(table[player].span.find_all('img')) - 1):
+                if len(table[player].span.find_all('img')) > 1: #If the player has more than one main listed we do this
+                    for mains in range(len(table[player].span.find_all('img')) - 1): #Does this for each character minus the last one
                         description += table[player].span.find_all('img')[mains].get('title') + ', '
-                description += table[player].span.find_all('img')[-1].get('title')
-                description += ' || ' + points[player].get_text(strip='True')
+                description += table[player].span.find_all('img')[-1].get('title') #Gets the very last character
+                description += ' || ' + points[player].get_text(strip='True') #Adds the player's points to the description
 
-                embed = discord.Embed(description=description)
-                embed.set_author(name=name, url=player_url, icon_url=character_url)
+                embed = discord.Embed(description=description) #Starts creating the embed, beginning with description
+                embed.set_author(name=name, url=player_url, icon_url=character_url) #Sets author info as the player's info
                 await self.bot.say(embed=embed)
 
         except:
