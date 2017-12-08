@@ -35,10 +35,12 @@ class Braacket:
             await self.bot.say('Couldn\'t find the latest bracket. Something broke.')
 
     @commands.command()
-    async def pr(self):
+    async def pr(self, players=5):
         '''Fetches the top 10 players on the current Power Ranking'''
         if self._pr_url is None:
             return await self.bot.say('No URL has been set. Use !setpr <url>')
+        if not 0 < players <= 10:
+            return await self.bot.say('Players must be > 0 and <= 10')
         async with aiohttp.get(self._pr_url) as response: #Look at the html of https://braacket.com/league/StevensMelee/ranking if you want to understand this code at all
             soupObject = BeautifulSoup(await response.text(), 'html.parser')
         try:
@@ -53,7 +55,7 @@ class Braacket:
                     for mains in range(len(table[player].span.find_all('img')) - 1): #Does this for each character minus the last one
                         description += table[player].span.find_all('img')[mains].get('title') + ', '
                 description += table[player].span.find_all('img')[-1].get('title') #Gets the very last character
-                description += ' || ' + points[player].get_text(strip='True') #Adds the player's points to the description
+                description +=   ' || ' + points[player].get_text(strip='True') #Adds the player's points to the description
 
                 embed = discord.Embed(description=description) #Starts creating the embed, beginning with description
                 embed.set_author(name=name, url=player_url, icon_url=character_url) #Sets author info as the player's info
@@ -66,6 +68,8 @@ class Braacket:
     async def setpr(self, url):
         '''Set the URL to use for !pr'''
         try:
+            if url[-1:] = '/':
+                url = url[:-1]
             self._pr_url = url
             await self.bot.say('Successfully set the URL to ' + url)
         except:
