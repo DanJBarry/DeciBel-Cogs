@@ -57,7 +57,7 @@ class Braacket:
 				description += ' || ' + points[player].get_text(strip='True') #Adds the player's points to the description
 
 				embed = discord.Embed(description=description) #Starts creating the embed, beginning with description
-				embed.set_author(name=name, url=player_url, icon_url=character_url) #Sets author info as the player's info
+				embed.set_author(name=str(player + 1) + ". "+ name, url=player_url, icon_url=character_url) #Sets author info as the player's info
 				await self.bot.say(embed=embed)
 
 		except:
