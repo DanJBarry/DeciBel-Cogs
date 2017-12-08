@@ -75,4 +75,4 @@ def setup(bot):
     if soupAvailable:
         bot.add_cog(Braacket(bot))
     else:
-raise RuntimeError('You need to run `pip3 install beautifulsoup4`')
+    	raise RuntimeError('You need to run `pip3 install beautifulsoup4`')
