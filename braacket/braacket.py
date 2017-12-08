@@ -35,7 +35,7 @@ class Braacket:
             await self.bot.say('Couldn\'t find the latest bracket. Something broke.')
 
     @commands.command()
-    async def pr(self, players=5):
+    async def pr(self, players):
         '''Fetches the top 10 players on the current Power Ranking'''
         if self._pr_url is None:
             return await self.bot.say('No URL has been set. Use !setpr <url>')
@@ -55,7 +55,7 @@ class Braacket:
                     for mains in range(len(table[player].span.find_all('img')) - 1): #Does this for each character minus the last one
                         description += table[player].span.find_all('img')[mains].get('title') + ', '
                 description += table[player].span.find_all('img')[-1].get('title') #Gets the very last character
-                description +=   ' || ' + points[player].get_text(strip='True') #Adds the player's points to the description
+                description += ' || ' + points[player].get_text(strip='True') #Adds the player's points to the description
 
                 embed = discord.Embed(description=description) #Starts creating the embed, beginning with description
                 embed.set_author(name=name, url=player_url, icon_url=character_url) #Sets author info as the player's info
