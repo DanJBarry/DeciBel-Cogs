@@ -37,12 +37,10 @@ class Braacket:
 			await self.bot.say('Couldn\'t find the latest bracket. Something broke.')
 
 	@commands.command()
-	async def pr(self, players):
+	async def pr(self, players=5):
 		'''Fetches the top players on the current Power Ranking'''
 		if self._league is None:
 			return await self.bot.say('League name has not been set yet. Use !setleague <league>')
-		if players is None: #Sets players to 5 if no argument is given
-			players = 5
 		if not 0 < players <= 10:
 			return await self.bot.say('Players must be between and including 1 through 10')
 		if self._pr_url is None:
@@ -73,11 +71,11 @@ class Braacket:
 			await self.bot.say('Couldn\'t find the latest PR. Something broke.')
 
 	@commands.command()
-	async def setpr(self, url):
+	async def setpr(self, url=None):
 		'''Set the ID of the pr to use for !pr. Leave blank to use the default'''
 		try:
-			if self._url is None:
-				self._url = None
+			if url is None:
+				self._pr_url = None
 				return await self.bot.say('Successfully set the PR to the default')
 			self._pr_url = url.strip()
 			await self.bot.say('Successfully set the PR ID to ' + self._pr_url)
