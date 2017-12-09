@@ -19,12 +19,15 @@ class Braacket:
 
 	def __init__(self, bot):
 		self.bot = bot
+		self._league = None
 		self._pr_url = None
 
 	@commands.command()
 	async def bracket(self):
 		'''Fetches the latest tourney bracket'''
-		url = 'https://braacket.com/league/StevensMelee/tournament' #build the web address
+		if self._league is None:
+			return await self.bot.say('League name has not been set yet. Use !setleague <league>')
+		url = 'https://braacket.com/league/' + self._league + '/tournament' #build the web address
 		async with aiohttp.get(url) as response:
 			soupObject = BeautifulSoup(await response.text(), 'html.parser')
 		try:
@@ -34,18 +37,24 @@ class Braacket:
 			await self.bot.say('Couldn\'t find the latest bracket. Something broke.')
 
 	@commands.command()
-	async def pr(self, players=5):
+	async def pr(self, players):
 		'''Fetches the top players on the current Power Ranking'''
-		if self._pr_url is None:
-			return await self.bot.say('No URL has been set. Use !setpr <url>')
+		if self._league is None:
+			return await self.bot.say('League name has not been set yet. Use !setleague <league>')
+		if players is None: #Sets players to 5 if no argument is given
+			players = 5
 		if not 0 < players <= 10:
 			return await self.bot.say('Players must be between and including 1 through 10')
-		async with aiohttp.get(self._pr_url) as response: #Look at the html of https://braacket.com/league/StevensMelee/ranking if you want to understand this code at all
+		if self._pr_url is None:
+			url = 'https://www.braacket.com/league/' + self._league + '/ranking'
+		else:
+			url = 'https://www.braacket.com/league' + self._league + '/ranking/' + self._pr_url
+		async with aiohttp.get(url) as response: #Look at the html of https://braacket.com/league/StevensMelee/ranking if you want to understand this code at all
 			soupObject = BeautifulSoup(await response.text(), 'html.parser')
 		try:
 			table = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='ellipsis') #Gets the table of players
 			points = soupObject.find_all(class_='panel-body')[1].table.tbody.find_all(class_='min text-right') #Gets the table of points for each player
-			for player in range(players): #We're gonna do this for the top 10
+			for player in range(players): #We're gonna do this for the number of players specified
 				name = table[player].get_text(strip='True') #The names are the plaintext elements
 				player_url = 'https://www.braacket.com' + table[player].a.get('href') #Grabs the link of each player
 				character_url = 'https://www.braacket.com' + table[player].img.get('src') #Grabs the icon for the first character of each player
@@ -57,7 +66,7 @@ class Braacket:
 				description += ' || ' + points[player].get_text(strip='True') #Adds the player's points to the description
 
 				embed = discord.Embed(description=description) #Starts creating the embed, beginning with description
-				embed.set_author(name=str(player + 1) + ". "+ name, url=player_url, icon_url=character_url) #Sets author info as the player's info
+				embed.set_author(name=str(player + 1) + ". 	"+ name, url=player_url, icon_url=character_url) #Sets author info as the player's info
 				await self.bot.say(embed=embed)
 
 		except:
@@ -65,17 +74,26 @@ class Braacket:
 
 	@commands.command()
 	async def setpr(self, url):
-		'''Set the URL to use for !pr'''
+		'''Set the ID of the pr to use for !pr. Leave blank to use the default'''
 		try:
-			test_url = url.strip().split('/')
-			if not ((test_url[0] == 'https:' or test_url[0] == 'http:') and test_url[2] == 'braacket.com' and test_url[3] == 'league' and test_url[5] == 'ranking'):
-				return await self.bot.say('Failed to set URL. Must be some form of https://braacket.com/league/[league name]/ranking')
-			if url[-1] == '/':
-				url = url[:-1]
-			self._pr_url = url
-			await self.bot.say('Successfully set the URL to ' + url)
+			if self._url is None:
+				self._url = None
+				return await self.bot.say('Successfully set the PR to the default')
+			self._pr_url = url.strip()
+			await self.bot.say('Successfully set the PR ID to ' + self._pr_url)
+
 		except:
 			await self.bot.say('Something broke :(')
+
+	@commands.command()
+	async def setleague(self, league):
+		'''Sets the league name'''
+		try:
+			self._league = league.strip()
+			await self.bot.say('Successfully set the league id to ' + self._league)
+		except:
+			await self.bot.say('Something broke :(')
+
 		
 
 def setup(bot):
