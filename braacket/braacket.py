@@ -46,7 +46,7 @@ class Braacket:
 		if self._pr_url is None:
 			url = 'https://www.braacket.com/league/' + self._league + '/ranking'
 		else:
-			url = 'https://www.braacket.com/league' + self._league + '/ranking/' + self._pr_url
+			url = 'https://www.braacket.com/league/' + self._league + '/ranking/' + self._pr_url
 		async with aiohttp.get(url) as response: #Look at the html of https://braacket.com/league/StevensMelee/ranking if you want to understand this code at all
 			soupObject = BeautifulSoup(await response.text(), 'html.parser')
 		try:
