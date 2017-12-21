@@ -89,7 +89,7 @@ class Braacket:
 			player_url = 'https://www.braacket.com' + self._player_list[player]
 			await self.bot.say(player_url)
 		except:
-			await.self.bot.say('Something broke :(')
+			await self.bot.say('Something broke :(')
 
 	@commands.command()
 	async def setpr(self, url=None):
@@ -100,7 +100,6 @@ class Braacket:
 				return await self.bot.say('Successfully set the PR to the default')
 			self._pr_url = url.strip()
 			await self.bot.say('Successfully set the PR ID to ' + self._pr_url)
-
 		except:
 			await self.bot.say('Something broke :(')
 
