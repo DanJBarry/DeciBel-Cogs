@@ -74,6 +74,8 @@ class Braacket:
 	@commands.command()
 	async def playerinfo(self, player):
 		'''Fetches info about the specified player from Braacket'''
+		if self._league is None:
+			return await self.bot.say('League name has not been set yet. Use !setleague <league>')
 		player = player.lower() #Kind of a hack to make this case insensitive but whatever
 		try:
 			if player not in self._player_list: #If the player is not found, a new dictionary is generated
