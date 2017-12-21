@@ -74,6 +74,7 @@ class Braacket:
 	@commands.command()
 	async def playerinfo(self, player):
 		'''Fetches info about the specified player from Braacket'''
+		player = player.lower() #Kind of a hack to make this case insensitive but whatever
 		try:
 			if player not in self._player_list: #If the player is not found, a new dictionary is generated
 				listurl = 'https://www.braacket.com/league/' + self._league + '/player?rows=200'
@@ -81,7 +82,7 @@ class Braacket:
 					bigListOfPlayers = BeautifulSoup(await response.text(), 'html.parser') #Yeah I realize I'm using both camel case and underscores, fuck off
 				table = bigListOfPlayers.find(class_='panel-body').find_all('a')
 				for i in range(len(table)):
-					name = table[i].get_text()
+					name = table[i].get_text().lower()
 					if name not in self._player_list:
 						self._player_list[name] =  table[i].get('href')
 			if player not in self._player_list: #If the player still isn't found, the user probably fucked up
@@ -118,7 +119,7 @@ class Braacket:
 				bigListOfPlayers = BeautifulSoup(await response.text(), 'html.parser')
 			table = bigListOfPlayers.find(class_='panel-body').find_all('a')
 			for i in range(len(table)):
-				name = table[i].get_text()
+				name = table[i].get_text().lower()
 				self._player_list[name] =  table[i].get('href')
 			await self.bot.say('Successfully cached player URLs')
 		except:
