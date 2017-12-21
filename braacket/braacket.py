@@ -88,6 +88,8 @@ class Braacket:
 				return await self.bot.say('Sorry, player could not be found.')
 			player_url = 'https://www.braacket.com' + self._player_list[player]
 			await self.bot.say(player_url)
+		except:
+			await.self.bot.say('Something broke :(')
 
 	@commands.command()
 	async def setpr(self, url=None):
@@ -109,12 +111,12 @@ class Braacket:
 			self._league = league.strip()
 			self._player_list = {}
 			listurl = 'https://www.braacket.com/league/' + self._league + '/player?rows=200'
-				async with aiohttp.get(listurl) as response:
-					bigListOfPlayers = BeautifulSoup(await response.text(), 'html.parser')
-				table = bigListOfPlayers.find(class_='panel-body').find_all('a')
-				for i in len(table):
-					name = table[i].get_text()
-					self._player_list[name] =  table[i].get('href')
+			async with aiohttp.get(listurl) as response:
+				bigListOfPlayers = BeautifulSoup(await response.text(), 'html.parser')
+			table = bigListOfPlayers.find(class_='panel-body').find_all('a')
+			for i in len(table):
+				name = table[i].get_text()
+				self._player_list[name] =  table[i].get('href')
 			await self.bot.say('Successfully set the league id to ' + self._league)
 		except:
 			await self.bot.say('Something broke :(')
