@@ -21,6 +21,7 @@ class Braacket:
 		self.bot = bot
 		self._league = None
 		self._pr_url = None
+		self._player_list = {}
 
 	@commands.command()
 	async def bracket(self):
@@ -71,6 +72,24 @@ class Braacket:
 			await self.bot.say('Couldn\'t find the latest PR. Something broke.')
 
 	@commands.command()
+	async def playerinfo(self, player):
+		'''Fetches info about the specified player from Braacket'''
+		try:
+			if player not in self._player_list:
+				listurl = 'https://www.braacket.com/league/' + self._league + '/player?rows=200'
+				async with aiohttp.get(listurl) as response:
+					bigListOfPlayers = BeautifulSoup(await response.text(), 'html.parser') #Yeah I realize I'm using both camel case and underscores, fuck off
+				table = bigListOfPlayers.find(class_='panel-body').find_all('a')
+				for i in len(table):
+					name = table[i].get_text()
+					if name not in self._player_list:
+						self._player_list[name] =  table[i].get('href')
+			if player not in self._player_list:
+				return await self.bot.say('Sorry, player could not be found.')
+			player_url = 'https://www.braacket.com' + self._player_list[player]
+			await self.bot.say(player_url)
+
+	@commands.command()
 	async def setpr(self, url=None):
 		'''Set the ID of the pr to use for !pr. Leave blank to use the default'''
 		try:
@@ -88,6 +107,14 @@ class Braacket:
 		'''Sets the league name'''
 		try:
 			self._league = league.strip()
+			self._player_list = {}
+			listurl = 'https://www.braacket.com/league/' + self._league + '/player?rows=200'
+				async with aiohttp.get(listurl) as response:
+					bigListOfPlayers = BeautifulSoup(await response.text(), 'html.parser')
+				table = bigListOfPlayers.find(class_='panel-body').find_all('a')
+				for i in len(table):
+					name = table[i].get_text()
+					self._player_list[name] =  table[i].get('href')
 			await self.bot.say('Successfully set the league id to ' + self._league)
 		except:
 			await self.bot.say('Something broke :(')
