@@ -11,6 +11,7 @@ try:  # check if BeautifulSoup4 is installed
 except:
 	soupAvailable = False
 import aiohttp
+import random
 
 
 class Braacket:
@@ -135,6 +136,18 @@ class Braacket:
 			await self.bot.say('Successfully cached player URLs')
 		except:
 			await self.bot.say('Failed to cache player URLs')
+
+	@commands.command()
+	async def brackey(self):
+		""":kek:"""
+		if random.SystemRandom.randint(0, 1) == 0:
+			return self.bot.say('nice spelling nerd OpieOP')
+		return self.bot.say('OpieOP nice spelling nerd')
+
+	@commands.command()
+	async def bracker(self):
+		""""What am I doing with my life"""
+		return self.brackey()
 
 
 def setup(bot):
