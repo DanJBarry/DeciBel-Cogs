@@ -7,6 +7,7 @@ from discord.ext import commands
 
 try:  # check if BeautifulSoup4 is installed
 	from bs4 import BeautifulSoup
+
 	soupAvailable = True
 except:
 	soupAvailable = False
@@ -148,7 +149,6 @@ class Braacket:
 	async def brackey(self):
 		""":kek:"""
 		self.bot.say(opeiop())
-
 
 	@commands.command()
 	async def bracker(self):
