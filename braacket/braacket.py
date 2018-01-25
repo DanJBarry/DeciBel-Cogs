@@ -11,7 +11,14 @@ try:  # check if BeautifulSoup4 is installed
 except:
 	soupAvailable = False
 import aiohttp
-import random
+import secrets
+
+
+def opeiop():
+	if secrets.randbelow(2) == 0:
+		return 'nice spelling nerd OpieOP'
+	else:
+		return 'OpieOP nice spelling nerd'
 
 
 class Braacket:
@@ -140,14 +147,13 @@ class Braacket:
 	@commands.command()
 	async def brackey(self):
 		""":kek:"""
-		if random.SystemRandom().randint(0, 1) == 0:
-			return self.bot.say('nice spelling nerd OpieOP')
-		return self.bot.say('OpieOP nice spelling nerd')
+		return await self.bot.say(opeiop())
+
 
 	@commands.command()
 	async def bracker(self):
 		""""What am I doing with my life"""
-		self.brackey()
+		return await self.bot.say(opeiop())
 
 
 def setup(bot):
