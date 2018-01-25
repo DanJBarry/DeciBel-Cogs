@@ -140,7 +140,7 @@ class Braacket:
 	@commands.command()
 	async def brackey(self):
 		""":kek:"""
-		if random.SystemRandom.randint(0, 1) == 0:
+		if random.randint(0, 1) == 0:
 			return self.bot.say('nice spelling nerd OpieOP')
 		return self.bot.say('OpieOP nice spelling nerd')
 
