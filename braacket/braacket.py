@@ -147,13 +147,13 @@ class Braacket:
 	@commands.command()
 	async def brackey(self):
 		""":kek:"""
-		await self.bot.say(opeiop())
+		self.bot.say(opeiop())
 
 
 	@commands.command()
 	async def bracker(self):
 		""""What am I doing with my life"""
-		await self.bot.say(opeiop())
+		self.bot.say(opeiop())
 
 
 def setup(bot):
