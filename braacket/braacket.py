@@ -3,6 +3,7 @@ Created on Nov 19, 2017
 @author: Dan Barry
 """
 import discord
+import async_timeout
 from discord.ext import commands
 
 try:  # check if BeautifulSoup4 is installed
@@ -13,6 +14,30 @@ except:
 	soupAvailable = False
 import aiohttp
 import secrets
+
+session = aiohttp.ClientSession()
+
+
+async def fetch(url):
+	with async_timeout.timeout(10):
+		async with session.get(url) as response:
+			return await response.text()
+
+
+# class Player:
+#
+# 	def __init__(self, id):
+# 		self._id = id
+# 		self._url = 'https://www.braacket.com' + id
+# 		self._player_page = BeautifulSoup(fetch(self._url), 'html.parser')
+# 		self._name = self._player_page.find(class_='ellipsis').get_text(strip='True')
+# 		self._main = self._player_page.find(class_='game_characters').img.get('src')
+# 		self._rank = self._player_page.find(class_='my-dashboard-values-main').get_text(strip='True').split("\t")[0]
+# 		self._score = self._player_page.find(class_='my-dashboard-values-sub').find_all('div')[1].get_text(strip='True')
+#
+# 	@property
+# 	def url(self):
+# 		return self._url
 
 
 def opeiop():
@@ -30,7 +55,16 @@ class Braacket:
 		self._league = None
 		self._pr_url = None
 		self._player_list = {}
-		self._session = aiohttp.ClientSession()
+
+	async def _fetch_players(self):
+		self._player_list = {}  # Creates a new player dictionary
+		# If you have more than 200 players, you're SOL
+		list_url = 'https://www.braacket.com/league/' + self._league + '/player?rows=200'
+		big_list_of_players = BeautifulSoup(await fetch(list_url), 'html.parser')
+		table = big_list_of_players.find(class_='panel-body').find_all('a')
+		for i in range(len(table)):
+			name = table[i].get_text().lower()
+			self._player_list[name] = table[i].get('href')
 
 	@commands.command()
 	async def bracket(self):
@@ -38,8 +72,7 @@ class Braacket:
 		if self._league is None:
 			return await self.bot.say('League name has not been set yet. Use !setleague <league>')
 		url = 'https://braacket.com/league/' + self._league + '/tournament'  # build the web address
-		async with self._session.get(url) as response:
-			soup_object = BeautifulSoup(await response.text(), 'html.parser')
+		soup_object = BeautifulSoup(await fetch(url), 'html.parser')
 		try:
 			latest = soup_object.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
 			await self.bot.say('https://braacket.com' + latest + '/bracket')
@@ -58,8 +91,7 @@ class Braacket:
 		else:
 			url = 'https://www.braacket.com/league/' + self._league + '/ranking/' + self._pr_url
 		# Look at the html of https://braacket.com/league/StevensMelee/ranking if you want to understand this code at all
-		async with self._session.get(url) as response:
-			soup_object = BeautifulSoup(await response.text(), 'html.parser')
+		soup_object = BeautifulSoup(await fetch(url), 'html.parser')
 		try:
 			table = soup_object.find_all(class_='panel-body')[1].table.tbody.find_all(
 				class_='ellipsis')  # Gets the table of players
@@ -96,14 +128,7 @@ class Braacket:
 		player = player.lower()  # Kind of a hack to make this case insensitive but whatever
 		try:
 			if player not in self._player_list:  # If the player is not found, a new dictionary is generated
-				list_url = 'https://www.braacket.com/league/' + self._league + '/player?rows=200'
-				async with self._session.get(list_url) as response:
-					big_list_of_players = BeautifulSoup(await response.text(), 'html.parser')
-				table = big_list_of_players.find(class_='panel-body').find_all('a')
-				for i in range(len(table)):
-					name = table[i].get_text().lower()
-					if name not in self._player_list:
-						self._player_list[name] = table[i].get('href')
+				self._fetch_players()
 			if player not in self._player_list:  # If the player still isn't found, the user probably fucked up
 				return await self.bot.say('Sorry, player could not be found.')
 			player_url = 'https://www.braacket.com' + self._player_list[player]
@@ -132,15 +157,7 @@ class Braacket:
 		except:
 			await self.bot.say('Failed to set league url')
 		try:
-			self._player_list = {}  # Creates a new player dictionary
-			# If you have more than 200 players, you're SOL
-			listurl = 'https://www.braacket.com/league/' + self._league + '/player?rows=200'
-			async with self._session.get(listurl) as response:
-				big_list_of_players = BeautifulSoup(await response.text(), 'html.parser')
-			table = big_list_of_players.find(class_='panel-body').find_all('a')
-			for i in range(len(table)):
-				name = table[i].get_text().lower()
-				self._player_list[name] = table[i].get('href')
+			self._fetch_players()
 			await self.bot.say('Successfully cached player URLs')
 		except:
 			await self.bot.say('Failed to cache player URLs')
