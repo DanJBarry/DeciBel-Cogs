@@ -30,7 +30,7 @@ class Braacket(commands.Cog):
             tourneypage=None
         )
 
-    @commands.command()
+    @commands.group()
     @commands.guild_only()
     async def braacketset(self):
         """Fetches the latest tourney bracket"""
