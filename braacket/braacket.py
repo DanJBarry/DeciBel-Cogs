@@ -66,7 +66,7 @@ class Braacket(commands.Cog):
                 ctx, _('No league ID has been set yet. Please do `!braacketset league [league-id]`')
             )
         try:
-            prrequest = requests.get('https://braacket.com/{league}/ranking/{pr}'.format(league=league, pr=pr))
+            prrequest = requests.get('https://braacket.com/league/{league}/ranking/{pr}'.format(league=league, pr=pr))
             prrequest.raise_for_status()
         except requests.exceptions.RequestException as e:
             await self._embed_msg(
