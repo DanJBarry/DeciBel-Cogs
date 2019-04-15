@@ -103,7 +103,7 @@ class Braacket(commands.Cog):
         finally:
             tourneysoup = BeautifulSoup(tourneypage, 'html.parser')
             latest = tourneysoup.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
-            await self.bot.say('https://braacket.com' + latest + '/bracket')
+            await ctx.send('https://braacket.com' + latest + '/bracket')
 
     @commands.command()
     @commands.guild_only()
