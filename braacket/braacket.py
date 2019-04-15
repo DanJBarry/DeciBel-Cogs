@@ -25,8 +25,7 @@ class Braacket(commands.Cog):
         self.config = Config.get_conf(self, 5151798315418247, force_registration=True)
         self.config.register_guild(
             league=None,
-            pr=None,
-            tourneypage=None
+            pr=None
         )
 
     @commands.group()
@@ -92,16 +91,12 @@ class Braacket(commands.Cog):
         try:
             tourneyrequest = requests.get(url)
             tourneyrequest.raise_for_status()
-            tourneypage = tourneyrequest.content
         except requests.exceptions.RequestException as e:
-            await self._embed_msg(
+            return await self._embed_msg(
                 ctx, _('Accessing the tournament page failed with the following error: {}').format(e)
             )
-            tourneypage = await self.config.guild(ctx.guild).tourneypage.get_raw()
         else:
-            await self.config.guild(ctx.guild).set_raw("tourneypage", value=tourneypage)
-        finally:
-            tourneysoup = BeautifulSoup(tourneypage, 'html.parser')
+            tourneysoup = BeautifulSoup(tourneyrequest.content, 'html.parser')
             latest = tourneysoup.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
             await ctx.send('https://braacket.com' + latest + '/bracket')
 
