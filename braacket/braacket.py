@@ -32,7 +32,7 @@ class Braacket(commands.Cog):
 
     @commands.group()
     @commands.guild_only()
-    async def braacketset(self):
+    async def braacketset(self, ctx):
         """Fetches the latest tourney bracket"""
         pass
 
