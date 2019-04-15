@@ -40,7 +40,7 @@ class Braacket(commands.Cog):
     async def league(self, ctx, league: str):
         """Sets the league ID. For example, the ID StevensMelee has the url https://braacket.com/league/StevensMelee"""
         try:
-            leaguerequest = requests.get('https://braacket.com/{}'.format(league))
+            leaguerequest = requests.get('https://braacket.com/league/{}'.format(league))
             leaguerequest.raise_for_status()
         except requests.exceptions.RequestException as e:
             await self._embed_msg(
