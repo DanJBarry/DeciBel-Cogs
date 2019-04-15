@@ -6,7 +6,6 @@ Created on Nov 19, 2017
 import discord
 import requests
 import logging
-import urllib.error
 from bs4 import BeautifulSoup
 from redbot.core import Config, checks, commands
 from redbot.core.i18n import Translator, cog_i18n
@@ -41,15 +40,11 @@ class Braacket(commands.Cog):
     async def league(self, ctx, league: str):
         """Sets the league ID. For example, the ID StevensMelee has the url https://braacket.com/league/StevensMelee"""
         try:
-            with urlopen('https://braacket.com/league/{}'.format(league)) as x:
-                pass
-        except urllib.error.HTTPError as e:
+            leaguerequest = requests.get('https://braacket.com/{}'.format(league))
+            leaguerequest.raise_for_status()
+        except requests.exceptions.RequestException as e:
             await self._embed_msg(
-                ctx, _('League does not appear to exist, failed with error code {}').format(str(e.code))
-            )
-        except urllib.error.URLError as e:
-            await self._embed_msg(
-                ctx, _('An error occurred while trying to open the league page - Reason: {}').format(str(e.reason))
+                ctx, _('Accessing the ranking page failed with the following error: {}').format(e)
             )
         else:
             await self.config.guild(ctx.guild).league.set(league)
@@ -61,7 +56,7 @@ class Braacket(commands.Cog):
     @checks.mod()
     async def setpr(self, ctx, pr: str):
         """Sets the league ID. For example, the ID StevensMelee has the url https://braacket.com/league/StevensMelee"""
-        if pr.lower() == 'none':
+        if pr is None or pr.lower() == 'default':
             await self.config.guild(ctx.guild).pr(None)
             return await self._embed_msg(
                 ctx, _('I will now use the league\'s default ranking')
@@ -72,15 +67,11 @@ class Braacket(commands.Cog):
                 ctx, _('No league ID has been set yet. Please do `!braacketset league [league-id]`')
             )
         try:
-            with urlopen('https://braacket.com/{league}/ranking/{pr}'.format(league=league, pr=pr)) as x:
-                pass
-        except urllib.error.HTTPError as e:
+            prrequest = requests.get('https://braacket.com/{league}/ranking/{pr}'.format(league=league, pr=pr))
+            prrequest.raise_for_status()
+        except requests.exceptions.RequestException as e:
             await self._embed_msg(
-                ctx, _('Ranking does not appear to exist, failed with error code {}').format(str(e.code))
-            )
-        except urllib.error.URLError as e:
-            await self._embed_msg(
-                ctx, _('An error occurred while trying to open the ranking page - Reason: {}').format(str(e.reason))
+                ctx, _('Accessing the ranking page failed with the following error: {}').format(e)
             )
         else:
             await self.config.guild(ctx.guild).pr.set(pr)
@@ -99,7 +90,9 @@ class Braacket(commands.Cog):
             )
         url = 'https://braacket.com/league/{}/tournament'.format(league)
         try:
-            tourneypage = requests.get(url).content
+            tourneyrequest = requests.get(url)
+            tourneyrequest.raise_for_status()
+            tourneypage = tourneyrequest.content
         except requests.exceptions.RequestException as e:
             await self._embed_msg(
                 ctx, _('Accessing the tournament page failed with the following error: {}').format(e)
