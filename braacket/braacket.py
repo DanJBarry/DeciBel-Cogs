@@ -117,3 +117,8 @@ class Braacket(commands.Cog):
     async def pr(self):
         """Fetches the top players on the current Power Ranking"""
         pass
+
+    @staticmethod
+    async def _embed_msg(ctx, title):
+        embed = discord.Embed(colour=await ctx.embed_colour(), title=title)
+        await ctx.send(embed=embed)
