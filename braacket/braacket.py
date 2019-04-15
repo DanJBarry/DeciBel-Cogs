@@ -6,6 +6,7 @@ Created on Nov 19, 2017
 import discord
 import requests
 import logging
+import re
 from bs4 import BeautifulSoup
 from redbot.core import Config, checks, commands
 from redbot.core.i18n import Translator, cog_i18n
@@ -13,6 +14,8 @@ from redbot.core.i18n import Translator, cog_i18n
 _ = Translator('Audio', __file__)
 
 log = logging.getLogger('red.braacket')
+
+_VALID_ID_REGEX = re.compile('^[A-Za-z0-9-_]+$')
 
 
 @cog_i18n(_)
@@ -38,6 +41,10 @@ class Braacket(commands.Cog):
     @checks.mod()
     async def league(self, ctx, league: str):
         """Sets the league ID. For example, the ID StevensMelee has the url https://braacket.com/league/StevensMelee"""
+        if not _VALID_ID_REGEX.match(league):
+            return await self._embed_msg(
+                ctx, _('League ID can only contain alphanumeric characters, dashes, and underscores')
+            )
         try:
             leaguerequest = requests.get('https://braacket.com/league/{}'.format(league))
             leaguerequest.raise_for_status()
@@ -55,7 +62,12 @@ class Braacket(commands.Cog):
     @checks.mod()
     async def setpr(self, ctx, pr: str):
         """Sets the league ID. For example, the ID StevensMelee has the url https://braacket.com/league/StevensMelee"""
-        if pr is None or pr.lower() == 'default':
+        pr = pr.upper()
+        if not _VALID_ID_REGEX.match(pr):
+            return await self._embed_msg(
+                ctx, _('Ranking ID can only contain alphanumeric characters, dashes, and underscores')
+            )
+        if pr.lower() == 'default':
             await self.config.guild(ctx.guild).pr(None)
             return await self._embed_msg(
                 ctx, _('I will now use the league\'s default ranking')
