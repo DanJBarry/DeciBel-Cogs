@@ -99,7 +99,7 @@ class Braacket(commands.Cog):
             )
             tourneypage = await self.config.guild(ctx.guild).tourneypage.get_raw()
         else:
-            await self.config.guild(ctx.guild).tourneypage.set_raw(tourneypage)
+            await self.config.guild(ctx.guild).tourneypage.set(tourneypage)
         finally:
             tourneysoup = BeautifulSoup(tourneypage, 'html.parser')
             latest = tourneysoup.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
