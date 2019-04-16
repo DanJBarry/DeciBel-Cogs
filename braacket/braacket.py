@@ -52,8 +52,10 @@ class Braacket(commands.Cog):
             await self._embed_msg(
                 ctx, _('Accessing the ranking page failed with the following error: {}').format(e)
             )
+            log.error(e)
         else:
             await self.config.guild(ctx.guild).league.set(league)
+            log.info("User {} set league ID to {} in guild {}".format(ctx.author, league, ctx.guild))
             await self._embed_msg(
                 ctx, _('Set Braacket league id to {}').format(league)
             )
@@ -84,8 +86,10 @@ class Braacket(commands.Cog):
             await self._embed_msg(
                 ctx, _('Accessing the ranking page failed with the following error: {}').format(e)
             )
+            log.error(e)
         else:
             await self.config.guild(ctx.guild).pr.set(pr)
+            log.info("User {} set ranking ID to {} for {} in guild {}".format(ctx.author, pr, league, ctx.guild))
             await self._embed_msg(
                 ctx, _('Set league\'s ranking ID to {}').format(pr)
             )
@@ -107,6 +111,7 @@ class Braacket(commands.Cog):
             return await self._embed_msg(
                 ctx, _('Accessing the tournament page failed with the following error: {}').format(e)
             )
+            log.error(e)
         else:
             tourneysoup = BeautifulSoup(tourneyrequest.content, 'html.parser')
             latest = tourneysoup.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
