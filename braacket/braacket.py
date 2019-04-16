@@ -33,14 +33,16 @@ class Braacket(commands.Cog):
 
     @commands.group()
     @commands.guild_only()
-    async def braacketset(self, ctx):
-        """Fetches the latest tourney bracket"""
+    async def braacketset(self, ctx: commands.Context):
+        """Braacket configuration options"""
         pass
 
     @braacketset.command()
     @checks.mod()
-    async def league(self, ctx, league: str):
-        """Sets the league ID. For example, the ID StevensMelee has the url https://braacket.com/league/StevensMelee"""
+    async def league(self, ctx: commands.Context, league: str):
+        """Sets the league ID.
+        For example, if the URL to your league page is https://braacket.com/league/StevensMelee
+        then the league ID is StevensMelee"""
         if not _VALID_ID_REGEX.match(league):
             return await self._embed_msg(
                 ctx, _('League ID can only contain alphanumeric characters, dashes, and underscores')
@@ -62,8 +64,11 @@ class Braacket(commands.Cog):
 
     @braacketset.command(name='pr')
     @checks.mod()
-    async def setpr(self, ctx, pr: str):
-        """Sets the league ID. For example, the ID StevensMelee has the url https://braacket.com/league/StevensMelee"""
+    async def setpr(self, ctx: commands.Context, pr: str):
+        """Sets the ranking ID.
+        For example, if the URL to your desired ranking page is
+        https://braacket.com/league/StevensMelee/ranking/39E07092-9936-4710-9EAA-1CDD3396A544
+        then the ranking ID is 39E07092-9936-4710-9EAA-1CDD3396A544"""
         pr = pr.upper()
         if not _VALID_ID_REGEX.match(pr):
             return await self._embed_msg(
@@ -96,7 +101,7 @@ class Braacket(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def bracket(self, ctx):
+    async def bracket(self, ctx: commands.Context):
         """Fetches the latest tourney bracket"""
         league = await self.config.guild(ctx.guild).league()
         if league is None:
@@ -108,7 +113,7 @@ class Braacket(commands.Cog):
             tourneyrequest = requests.get(url)
             tourneyrequest.raise_for_status()
         except requests.exceptions.RequestException as e:
-            return await self._embed_msg(
+            await self._embed_msg(
                 ctx, _('Accessing the tournament page failed with the following error: {}').format(e)
             )
             log.error(e)
@@ -124,6 +129,6 @@ class Braacket(commands.Cog):
         pass
 
     @staticmethod
-    async def _embed_msg(ctx, title):
+    async def _embed_msg(ctx: commands.Context, title: str):
         embed = discord.Embed(colour=await ctx.embed_colour(), title=title)
         await ctx.send(embed=embed)
