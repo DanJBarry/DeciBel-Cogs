@@ -103,7 +103,7 @@ class Braacket(commands.Cog):
             )
             log.error(e)
         else:
-            await self.config.guild(ctx.guild).pr.set(str(uuid).upper)
+            await self.config.guild(ctx.guild).pr.set(str(uuid).upper())
             log.info(
                 f"User {ctx.author} set ranking UUID to {uuid} for {league} in guild {ctx.guild}"
             )
