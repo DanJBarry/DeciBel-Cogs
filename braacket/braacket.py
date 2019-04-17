@@ -135,8 +135,8 @@ class Braacket(commands.Cog):
             return await self._embed_msg(
                 ctx, _('League name has not been set yet. Please do !braacketset <league>')
             )
-        pr = await self.config.guild(ctx.guild).league()
-        url = 'https://www.braacket.com/league/{}/ranking/'.format(pr or "")
+        pr = await self.config.guild(ctx.guild).pr()
+        url = 'https://www.braacket.com/league/{}/ranking/{}'.format(league, pr or "")
         try:
             pr_request = requests.get(url)
             pr_request.raise_for_status()
