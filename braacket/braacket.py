@@ -1,12 +1,8 @@
-"""
-Created on Nov 19, 2017
-@author: Dan Barry
-"""
+import logging
+import re
 
 import discord
 import requests
-import logging
-import re
 from bs4 import BeautifulSoup
 from redbot.core import Config, checks, commands
 from redbot.core.i18n import Translator, cog_i18n
@@ -15,7 +11,7 @@ _ = Translator('Audio', __file__)
 
 log = logging.getLogger('red.braacket')
 
-_VALID_ID_REGEX = re.compile('^[A-Za-z0-9-_]+$')
+_VALID_ID_REGEX = re.compile('^[\\w-]+$')
 
 
 @cog_i18n(_)
@@ -42,14 +38,15 @@ class Braacket(commands.Cog):
     async def league(self, ctx: commands.Context, league: str):
         """Sets the league ID.
         For example, if the URL to your league page is https://braacket.com/league/StevensMelee
-        then the league ID is StevensMelee"""
+        then the league ID is StevensMelee
+        """
         if not _VALID_ID_REGEX.match(league):
             return await self._embed_msg(
                 ctx, _('League ID can only contain alphanumeric characters, dashes, and underscores')
             )
         try:
-            leaguerequest = requests.get('https://braacket.com/league/{}'.format(league))
-            leaguerequest.raise_for_status()
+            league_request = requests.get('https://braacket.com/league/{}'.format(league))
+            league_request.raise_for_status()
         except requests.exceptions.RequestException as e:
             await self._embed_msg(
                 ctx, _('Accessing the ranking page failed with the following error: {}').format(e)
@@ -57,18 +54,21 @@ class Braacket(commands.Cog):
             log.error(e)
         else:
             await self.config.guild(ctx.guild).league.set(league)
-            log.info("User {} set league ID to {} in guild {}".format(ctx.author, league, ctx.guild))
+            log.info('User {} set league ID to {} in guild {}'.format(ctx.author, league, ctx.guild))
             await self._embed_msg(
                 ctx, _('Set Braacket league id to {}').format(league)
             )
 
     @braacketset.command(name='pr')
     @checks.mod()
-    async def setpr(self, ctx: commands.Context, pr: str):
+    async def set_pr(self, ctx: commands.Context, pr: str):
         """Sets the ranking ID.
         For example, if the URL to your desired ranking page is
         https://braacket.com/league/StevensMelee/ranking/39E07092-9936-4710-9EAA-1CDD3396A544
-        then the ranking ID is 39E07092-9936-4710-9EAA-1CDD3396A544"""
+        then the ranking ID is 39E07092-9936-4710-9EAA-1CDD3396A544
+
+        !braacketset pr default will reset to the league's default ranking
+        """
         pr = pr.upper()
         if not _VALID_ID_REGEX.match(pr):
             return await self._embed_msg(
@@ -82,11 +82,11 @@ class Braacket(commands.Cog):
         league = await self.config.guild(ctx.guild).league()
         if league is None:
             return await self._embed_msg(
-                ctx, _('No league ID has been set yet. Please do `!braacketset league [league-id]`')
+                ctx, _('No league ID has been set yet. Please do !braacketset league [league-id]')
             )
         try:
-            prrequest = requests.get('https://braacket.com/league/{league}/ranking/{pr}'.format(league=league, pr=pr))
-            prrequest.raise_for_status()
+            pr_request = requests.get('https://braacket.com/league/{}/ranking/{}'.format(league, pr))
+            pr_request.raise_for_status()
         except requests.exceptions.RequestException as e:
             await self._embed_msg(
                 ctx, _('Accessing the ranking page failed with the following error: {}').format(e)
@@ -94,7 +94,7 @@ class Braacket(commands.Cog):
             log.error(e)
         else:
             await self.config.guild(ctx.guild).pr.set(pr)
-            log.info("User {} set ranking ID to {} for {} in guild {}".format(ctx.author, pr, league, ctx.guild))
+            log.info('User {} set ranking ID to {} for {} in guild {}'.format(ctx.author, pr, league, ctx.guild))
             await self._embed_msg(
                 ctx, _('Set league\'s ranking ID to {}').format(pr)
             )
@@ -106,20 +106,20 @@ class Braacket(commands.Cog):
         league = await self.config.guild(ctx.guild).league()
         if league is None:
             return await self._embed_msg(
-                ctx, _('League name has not been set yet. Use !setleague <league>')
+                ctx, _('League name has not been set yet. Use !braacketset league <league>')
             )
         url = 'https://braacket.com/league/{}/tournament'.format(league)
         try:
-            tourneyrequest = requests.get(url)
-            tourneyrequest.raise_for_status()
+            tourney_request = requests.get(url)
+            tourney_request.raise_for_status()
         except requests.exceptions.RequestException as e:
             await self._embed_msg(
                 ctx, _('Accessing the tournament page failed with the following error: {}').format(e)
             )
             log.error(e)
         else:
-            tourneysoup = BeautifulSoup(tourneyrequest.content, 'html.parser')
-            latest = tourneysoup.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
+            tourney_soup = BeautifulSoup(tourney_request.content, 'html.parser')
+            latest = tourney_soup.find(class_='col-xs-12 col-sm-6 col-md-4 col-lg-3').find('a').get('href')
             await ctx.send('https://braacket.com{}/bracket'.format(latest))
 
     @commands.command()
@@ -133,27 +133,27 @@ class Braacket(commands.Cog):
         league = await self.config.guild(ctx.guild).league()
         if league is None:
             return await self._embed_msg(
-                ctx, _('League name has not been set yet. Use !setleague <league>')
+                ctx, _('League name has not been set yet. Please do !braacketset <league>')
             )
         pr = await self.config.guild(ctx.guild).league()
         url = 'https://www.braacket.com/league/{}/ranking/'.format(pr or "")
         try:
-            prrequest = requests.get(url)
-            prrequest.raise_for_status()
+            pr_request = requests.get(url)
+            pr_request.raise_for_status()
         except requests.exceptions.RequestException as e:
             await self._embed_msg(
                 ctx, _('Accessing the tournament page failed with the following error: {}').format(e)
             )
             log.error(e)
         else:
-            prsoup = BeautifulSoup(prrequest.content, 'html.parser')
-            players = prsoup.find_all(
+            pr_soup = BeautifulSoup(pr_request.content, 'html.parser')
+            players = pr_soup.find_all(
                 lambda x:
                 re.match('/league/StevensMelee/player/', x['data-href'])
                 if x.has_attr('data-href')
                 else False
             )
-            points = prsoup.find_all(class_='min text-right')
+            points = pr_soup.find_all(class_='min text-right')
             for i in range(count):
                 name = players[i].get_text(strip='True')
                 player_url = 'https://www.braacket.com' + players[i].a.get('href')
