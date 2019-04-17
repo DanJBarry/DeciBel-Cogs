@@ -2,8 +2,8 @@ import logging
 import re
 from uuid import UUID
 
+import aiohttp
 import discord
-import requests
 from bs4 import BeautifulSoup
 from redbot.core import Config, checks, commands
 from redbot.core.i18n import Translator, cog_i18n
@@ -22,8 +22,12 @@ class Braacket(commands.Cog):
     def __init__(self, bot):
         super().__init__()
         self.bot = bot
+        self._session = aiohttp.ClientSession()
         self.config = Config.get_conf(self, 5151798315418247, force_registration=True)
         self.config.register_guild(league=None, pr=None)
+
+    def __unload(self):
+        self.bot.loop.create_task(self.session.close())
 
     @commands.group()
     @commands.guild_only()
@@ -45,21 +49,10 @@ class Braacket(commands.Cog):
                     "League ID can only contain alphanumeric characters, dashes, and underscores"
                 ),
             )
-        try:
-            league_request = requests.get(f"https://braacket.com/league/{league}")
-            league_request.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            await self._embed_msg(
-                ctx,
-                _(f"Accessing the ranking page failed with the following error: {e}"),
-            )
-            log.error(e)
-        else:
-            await self.config.guild(ctx.guild).league.set(league)
-            log.info(
-                f"User {ctx.author} set league ID to {league} in guild {ctx.guild}"
-            )
-            await self._embed_msg(ctx, _(f"Set Braacket league id to {league}"))
+        await self._fetch(ctx, f"https://www.braacket.com/league/{league}")
+        await self.config.guild(ctx.guild).league.set(league)
+        log.info(f"User {ctx.author} set league ID to {league} in guild {ctx.guild}")
+        await self._embed_msg(ctx, _(f"Set Braacket league id to {league}"))
 
     @braacketset.command(name="pr")
     @checks.mod()
@@ -91,23 +84,14 @@ class Braacket(commands.Cog):
                     "No league ID has been set yet. Please do !braacketset league [league-id]"
                 ),
             )
-        try:
-            pr_request = requests.get(
-                f"https://braacket.com/league/{league}/ranking/{uuid}"
-            )
-            pr_request.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            await self._embed_msg(
-                ctx,
-                _(f"Accessing the ranking page failed with the following error: {e}"),
-            )
-            log.error(e)
-        else:
-            await self.config.guild(ctx.guild).pr.set(str(uuid).upper())
-            log.info(
-                f"User {ctx.author} set ranking UUID to {uuid} for {league} in guild {ctx.guild}"
-            )
-            await self._embed_msg(ctx, _(f"Set league's ranking UUID to {uuid}"))
+        await self._fetch(
+            ctx, f"https://www.braacket.com/league/{league}/ranking/{uuid}"
+        )
+        await self.config.guild(ctx.guild).pr.set(str(uuid).upper())
+        log.info(
+            f"User {ctx.author} set ranking UUID to {uuid} for {league} in guild {ctx.guild}"
+        )
+        await self._embed_msg(ctx, _(f"Set league's ranking UUID to {uuid}"))
 
     @commands.command()
     @commands.guild_only()
@@ -120,25 +104,14 @@ class Braacket(commands.Cog):
                 _("League name has not been set yet. Use !braacketset league <league>"),
             )
         url = f"https://braacket.com/league/{league}/tournament"
-        try:
-            tourney_request = requests.get(url)
-            tourney_request.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            await self._embed_msg(
-                ctx,
-                _(
-                    f"Accessing the tournament page failed with the following error: {e}"
-                ),
-            )
-            log.error(e)
-        else:
-            tourney_soup = BeautifulSoup(tourney_request.content, "html.parser")
-            latest = (
-                tourney_soup.find(class_="col-xs-12 col-sm-6 col-md-4 col-lg-3")
-                .find("a")
-                .get("href")
-            )
-            await ctx.send(f"https://braacket.com{latest}/bracket")
+        tourney_request = await self._fetch(ctx, url)
+        tourney_soup = BeautifulSoup(tourney_request, "html.parser")
+        latest = (
+            tourney_soup.find(class_="col-xs-12 col-sm-6 col-md-4 col-lg-3")
+            .find("a")
+            .get("href")
+        )
+        await ctx.send(f"https://braacket.com{latest}/bracket")
 
     @commands.command()
     @commands.guild_only()
@@ -156,45 +129,40 @@ class Braacket(commands.Cog):
             )
         pr = await self.config.guild(ctx.guild).pr()
         url = f'https://www.braacket.com/league/{league}/ranking/{pr or ""}'
-        try:
-            pr_request = requests.get(url)
-            pr_request.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            await self._embed_msg(
-                ctx,
-                _(
-                    f"Accessing the tournament page failed with the following error: {e}"
-                ),
-            )
-            log.error(e)
-        else:
-            pr_soup = BeautifulSoup(pr_request.content, "html.parser")
-            players = pr_soup.find_all(
-                lambda x: re.match(f"/league/{league}/player/", x["data-href"])
-                if x.has_attr("data-href")
-                else False
-            )
-            points = pr_soup.find_all(class_="min text-right")
-            for i in range(count):
-                name = players[i].get_text(strip="True")
-                player_url = "https://www.braacket.com" + players[i].a.get("href")
-                character_url = "https://www.braacket.com" + players[i].img.get("src")
-                mains = players[i].span.find_all("img")
-                embed_desc = ""
-                for j in range(len(mains) - 1):
-                    embed_desc += mains[j].get("title") + ", "
-                embed_desc += mains[-1].get("title")  # Always get the last main
-                embed_desc += " || " + points[i].get_text(strip="True")
+        pr_request = await self._fetch(ctx, url)
+        pr_soup = BeautifulSoup(pr_request, "html.parser")
+        players = pr_soup.find_all(
+            lambda x: re.match(f"/league/{league}/player/", x["data-href"])
+            if x.has_attr("data-href")
+            else False
+        )
+        points = pr_soup.find_all(class_="min text-right")
+        for i in range(count):
+            name = players[i].get_text(strip="True")
+            player_url = "https://www.braacket.com" + players[i].a.get("href")
+            character_url = "https://www.braacket.com" + players[i].img.get("src")
+            mains = players[i].span.find_all("img")
+            embed_desc = ""
+            for j in range(len(mains) - 1):
+                embed_desc += mains[j].get("title") + ", "
+            embed_desc += mains[-1].get("title")  # Always get the last main
+            embed_desc += " || " + points[i].get_text(strip="True")
 
-                embed = discord.Embed(
-                    description=embed_desc, color=await ctx.embed_colour()
-                )
-                embed.set_author(
-                    name=str(i + 1) + ". 	" + name,
-                    url=player_url,
-                    icon_url=character_url,
-                )
-                await ctx.send(embed=embed)
+            embed = discord.Embed(
+                description=embed_desc, color=await ctx.embed_colour()
+            )
+            embed.set_author(
+                name=str(i + 1) + ".\t" + name, url=player_url, icon_url=character_url
+            )
+            await ctx.send(embed=embed)
+
+    async def _fetch(self, ctx: commands.Context, url: str):
+        try:
+            async with self._session.get(url) as resp:
+                return resp.text()
+        except aiohttp.ClientResponseError as e:
+            log.error(e)
+            await self._embed_msg(ctx, _(f"Connection to {url} failed: {e}"))
 
     @staticmethod
     async def _embed_msg(ctx: commands.Context, title: str):
