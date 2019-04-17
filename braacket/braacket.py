@@ -124,8 +124,12 @@ class Braacket(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def pr(self, ctx: commands.Context, count: int):
+    async def pr(self, ctx: commands.Context, count: int = 5):
         """Fetches the top players on the current Power Ranking"""
+        if not 1 <= count <= 10:
+            return await self._embed_msg(
+                ctx, _('Please pick a number between 1 and 10')
+            )
         league = await self.config.guild(ctx.guild).league()
         if league is None:
             return await self._embed_msg(
