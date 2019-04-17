@@ -124,11 +124,48 @@ class Braacket(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def pr(self):
+    async def pr(self, ctx: commands.Context, count: int):
         """Fetches the top players on the current Power Ranking"""
-        pass
+        league = await self.config.guild(ctx.guild).league()
+        if league is None:
+            return await self._embed_msg(
+                ctx, _('League name has not been set yet. Use !setleague <league>')
+            )
+        pr = await self.config.guild(ctx.guild).league()
+        url = 'https://www.braacket.com/league/{}/ranking/'.format(pr or "")
+        try:
+            prrequest = requests.get(url)
+            prrequest.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            await self._embed_msg(
+                ctx, _('Accessing the tournament page failed with the following error: {}').format(e)
+            )
+            log.error(e)
+        else:
+            prsoup = BeautifulSoup(prrequest.content, 'html.parser')
+            players = prsoup.find_all(
+                lambda x:
+                re.match('/league/StevensMelee/player/', x['data-href'])
+                if x.has_attr('data-href')
+                else False
+            )
+            points = prsoup.find_all(class_='min text-right')
+            for i in range(count):
+                name = players[i].get_text(strip='True')
+                player_url = 'https://www.braacket.com' + players[i].a.get('href')
+                character_url = 'https://www.braacket.com' + players[i].img.get('src')
+                description = ''
+                if len(players[i].span.find_all('img')) > 1:  # For when the player has more than one main
+                    for mains in range(len(players[i].span.find_all('img')) - 1):
+                        description += players[i].span.find_all('img')[mains].get('title') + ', '
+                description += players[i].span.find_all('img')[-1].get('title')  # Always get the last main
+                description += ' || ' + points[i].get_text(strip='True')
+
+                embed = discord.Embed(description=description, color=await ctx.embed_colour())
+                embed.set_author(name=str(i + 1) + ". 	" + name, url=player_url, icon_url=character_url)
+                await ctx.send(embed=embed)
 
     @staticmethod
     async def _embed_msg(ctx: commands.Context, title: str):
-        embed = discord.Embed(colour=await ctx.embed_colour(), title=title)
+        embed = discord.Embed(color=await ctx.embed_colour(), title=title)
         await ctx.send(embed=embed)
