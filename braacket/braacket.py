@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from redbot.core import Config, checks, commands
 from redbot.core.i18n import Translator, cog_i18n
 
-_ = Translator('Audio', __file__)
+_ = Translator('Braacket', __file__)
 
 log = logging.getLogger('red.braacket')
 
