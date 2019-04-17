@@ -16,7 +16,7 @@ _VALID_ID_REGEX = re.compile('^[\\w-]+$')
 
 @cog_i18n(_)
 class Braacket(commands.Cog):
-    """Interact with the Stevens Melee Braacket page"""
+    """Interact with a Braacket league"""
 
     def __init__(self, bot):
         super().__init__()
