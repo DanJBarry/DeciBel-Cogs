@@ -159,7 +159,7 @@ class Braacket(commands.Cog):
     async def _fetch(self, ctx: commands.Context, url: str):
         try:
             async with self._session.get(url) as resp:
-                return resp.text()
+                return await resp.text()
         except aiohttp.ClientResponseError as e:
             log.error(e)
             await self._embed_msg(ctx, _(f"Connection to {url} failed: {e}"))
