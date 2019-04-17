@@ -158,14 +158,14 @@ class Braacket(commands.Cog):
                 name = players[i].get_text(strip='True')
                 player_url = 'https://www.braacket.com' + players[i].a.get('href')
                 character_url = 'https://www.braacket.com' + players[i].img.get('src')
-                description = ''
-                if len(players[i].span.find_all('img')) > 1:  # For when the player has more than one main
-                    for mains in range(len(players[i].span.find_all('img')) - 1):
-                        description += players[i].span.find_all('img')[mains].get('title') + ', '
-                description += players[i].span.find_all('img')[-1].get('title')  # Always get the last main
-                description += ' || ' + points[i].get_text(strip='True')
+                mains = players[i].span.find_all('img')
+                embed_desc = ''
+                for j in range(len(mains) - 1):  # For when the player has more than one main
+                    embed_desc += mains[j].get('title') + ', '
+                embed_desc += mains[-1].get('title')  # Always get the last main
+                embed_desc += ' || ' + points[i].get_text(strip='True')
 
-                embed = discord.Embed(description=description, color=await ctx.embed_colour())
+                embed = discord.Embed(description=embed_desc, color=await ctx.embed_colour())
                 embed.set_author(name=str(i + 1) + ". 	" + name, url=player_url, icon_url=character_url)
                 await ctx.send(embed=embed)
 
