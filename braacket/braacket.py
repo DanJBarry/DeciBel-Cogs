@@ -1,5 +1,6 @@
 import logging
 import re
+from uuid import UUID
 
 import discord
 import requests
@@ -70,19 +71,18 @@ class Braacket(commands.Cog):
 
         !braacketset pr default will reset to the league's default ranking
         """
-        uuid = uuid.upper()
-        if not _VALID_ID_REGEX.match(uuid):
-            return await self._embed_msg(
-                ctx,
-                _(
-                    "Ranking ID can only contain alphanumeric characters, dashes, and underscores"
-                ),
-            )
         if uuid.lower() == "default":
             await self.config.guild(ctx.guild).pr(None)
+            log.info(
+                f"User {ctx.author} set ranking UUID to league default in guild {ctx.guild}"
+            )
             return await self._embed_msg(
                 ctx, _("I will now use the league's default ranking")
             )
+        try:
+            uuid = UUID(uuid, version=4)
+        except ValueError:
+            return await self._embed_msg(ctx, _("This does not look like a valid UUID"))
         league = await self.config.guild(ctx.guild).league()
         if league is None:
             return await self._embed_msg(
@@ -105,9 +105,9 @@ class Braacket(commands.Cog):
         else:
             await self.config.guild(ctx.guild).pr.set(uuid)
             log.info(
-                f"User {ctx.author} set ranking ID to {uuid} for {league} in guild {ctx.guild}"
+                f"User {ctx.author} set ranking UUID to {uuid} for {league} in guild {ctx.guild}"
             )
-            await self._embed_msg(ctx, _(f"Set league's ranking ID to {uuid}"))
+            await self._embed_msg(ctx, _(f"Set league's ranking UUID to {uuid}"))
 
     @commands.command()
     @commands.guild_only()
