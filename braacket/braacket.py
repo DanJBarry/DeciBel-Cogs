@@ -149,7 +149,7 @@ class Braacket(commands.Cog):
             pr_soup = BeautifulSoup(pr_request.content, 'html.parser')
             players = pr_soup.find_all(
                 lambda x:
-                re.match('/league/StevensMelee/player/', x['data-href'])
+                re.match('/league/{}/player/'.format(league), x['data-href'])
                 if x.has_attr('data-href')
                 else False
             )
