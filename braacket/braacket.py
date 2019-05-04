@@ -142,7 +142,7 @@ class Braacket(commands.Cog):
             for j in range(len(mains) - 1):
                 embed_desc += mains[j] + ", "
             embed_desc += mains[-1]  # Always get the last main
-            embed_desc += " || " + points[i].get_text(strip="True")
+            embed_desc += " || " + points[i]
 
             embed = discord.Embed(
                 description=embed_desc, color=await ctx.embed_colour()
