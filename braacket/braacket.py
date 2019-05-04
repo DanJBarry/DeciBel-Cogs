@@ -129,7 +129,9 @@ class Braacket(commands.Cog):
             ctx, f'https://www.braacket.com/league/{league}/ranking/{pr or ""}'
         )
         pr_tree = lxml.html.fromstring(pr_request)
-        players = pr_tree.xpath('//th[text()="Player"]/../../..//td[@class="ellipsis"]')
+        players = pr_tree.xpath(
+            '//th[text()="Player"]/ancestor::table//td[@class="ellipsis"]'
+        )
         points = pr_tree.xpath('//td[@class="min text-right"]/text()')
         for i in range(count):
             name = players[i].xpath("a/text()")[0]
