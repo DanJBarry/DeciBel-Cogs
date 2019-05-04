@@ -103,7 +103,9 @@ class Braacket(commands.Cog):
                 ctx,
                 _("League name has not been set yet. Use !braacketset league <league>"),
             )
-        tourney_request = await self._fetch(ctx, f"https://braacket.com/league/{league}/tournament")
+        tourney_request = await self._fetch(
+            ctx, f"https://braacket.com/league/{league}/tournament"
+        )
         tourney_tree = lxml.html.fromstring(tourney_request)
         latest = tourney_tree.xpath("//table//a/@href")[0]
         await ctx.send(f"https://braacket.com{latest}/bracket")
@@ -123,7 +125,9 @@ class Braacket(commands.Cog):
                 _("League name has not been set yet. Please do !braacketset <league>"),
             )
         pr = await self.config.guild(ctx.guild).pr()
-        pr_request = await self._fetch(ctx, f'https://www.braacket.com/league/{league}/ranking/{pr or ""}')
+        pr_request = await self._fetch(
+            ctx, f'https://www.braacket.com/league/{league}/ranking/{pr or ""}'
+        )
         pr_tree = lxml.html.fromstring(pr_request)
         players = pr_tree.xpath('//th[text()="Player"]/../../..//td[@class="ellipsis"]')
         points = pr_tree.xpath('//td[@class="min text-right"]/text()')
@@ -136,8 +140,8 @@ class Braacket(commands.Cog):
             mains = players[i].xpath("span//img/@title")
             embed_desc = ""
             for j in range(len(mains) - 1):
-                embed_desc += mains[j].get("title") + ", "
-            embed_desc += mains[-1].get("title")  # Always get the last main
+                embed_desc += mains[j] + ", "
+            embed_desc += mains[-1]  # Always get the last main
             embed_desc += " || " + points[i].get_text(strip="True")
 
             embed = discord.Embed(
