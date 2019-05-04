@@ -4,7 +4,7 @@ from uuid import UUID
 
 import aiohttp
 import discord
-from bs4 import BeautifulSoup
+import lxml.html
 from redbot.core import Config, checks, commands
 from redbot.core.i18n import Translator, cog_i18n
 
@@ -103,14 +103,11 @@ class Braacket(commands.Cog):
                 ctx,
                 _("League name has not been set yet. Use !braacketset league <league>"),
             )
-        url = f"https://braacket.com/league/{league}/tournament"
-        tourney_request = await self._fetch(ctx, url)
-        tourney_soup = BeautifulSoup(tourney_request, "html.parser")
-        latest = (
-            tourney_soup.find(class_="col-xs-12 col-sm-6 col-md-4 col-lg-3")
-            .find("a")
-            .get("href")
-        )
+        with await self._fetch(
+            ctx, f"https://braacket.com/league/{league}/tournament"
+        ) as tourney_request:
+            tourney_tree = lxml.html.fromstring(tourney_request)
+        latest = tourney_tree.xpath("//table//a/@href")[0]
         await ctx.send(f"https://braacket.com{latest}/bracket")
 
     @commands.command()
@@ -128,20 +125,19 @@ class Braacket(commands.Cog):
                 _("League name has not been set yet. Please do !braacketset <league>"),
             )
         pr = await self.config.guild(ctx.guild).pr()
-        url = f'https://www.braacket.com/league/{league}/ranking/{pr or ""}'
-        pr_request = await self._fetch(ctx, url)
-        pr_soup = BeautifulSoup(pr_request, "html.parser")
-        players = pr_soup.find_all(
-            lambda x: re.match(f"/league/{league}/player/", x["data-href"])
-            if x.has_attr("data-href")
-            else False
-        )
-        points = pr_soup.find_all(class_="min text-right")
+        with await self._fetch(
+            ctx, f'https://www.braacket.com/league/{league}/ranking/{pr or ""}'
+        ) as pr_request:
+            pr_tree = lxml.html.fromstring(pr_request)
+        players = pr_tree.xpath('//th[text()="Player"]/../../..//td[@class="ellipsis"]')
+        points = pr_tree.xpath('//td[@class="min text-right"]/text()')
         for i in range(count):
-            name = players[i].get_text(strip="True")
-            player_url = "https://www.braacket.com" + players[i].a.get("href")
-            character_url = "https://www.braacket.com" + players[i].img.get("src")
-            mains = players[i].span.find_all("img")
+            name = players[i].xpath("a/text()")[0]
+            player_url = "https://www.braacket.com" + players[i].xpath("a/@href")[0]
+            character_url = (
+                "https://www.braacket.com" + players[i].xpath("span/img/@src")[0]
+            )
+            mains = players[i].xpath("span//img/@title")
             embed_desc = ""
             for j in range(len(mains) - 1):
                 embed_desc += mains[j].get("title") + ", "
@@ -159,7 +155,7 @@ class Braacket(commands.Cog):
     async def _fetch(self, ctx: commands.Context, url: str):
         try:
             async with self._session.get(url) as resp:
-                return await resp .text()
+                return await resp.text()
         except aiohttp.ClientResponseError as e:
             log.error(e)
             await self._embed_msg(ctx, _(f"Connection to {url} failed: {e}"))
